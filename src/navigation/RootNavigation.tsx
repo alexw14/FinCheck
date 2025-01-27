@@ -4,6 +4,7 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import SignupScreen from '../screens/SignupScreen';
 import LoginScreen from '../screens/LoginScreen';
+import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 
 const RootStack = createNativeStackNavigator({
   initialRouteName: 'Onboarding',
@@ -32,6 +33,12 @@ const RootStack = createNativeStackNavigator({
         headerShown: false,
       },
     },
+    VerifyEmail: {
+      screen: VerifyEmailScreen,
+      options: {
+        headerShown: false
+      }
+    }
   },
 });
 

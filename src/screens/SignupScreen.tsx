@@ -9,6 +9,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { signUpUser } from '../store/slices/authSlice';
@@ -18,7 +19,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const SignupScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch<AppDispatch>();
@@ -28,12 +29,50 @@ const SignupScreen = () => {
     dispatch(signUpUser({ email, password }))
       .unwrap()
       .then(() => {
-        navigation.navigate('Dashboard');
+        navigation.navigate('VerifyEmail');
       })
       .catch((err) => {
         console.error(err);
       });
   };
+
+  const errorMessage = error ? (
+    <Text style={styles.errorText}>{error}</Text>
+  ) : null;
+
+  const loadingIndicator = loading ? (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#007BFF" />
+      <Text style={styles.loadingText}>Creating account...</Text>
+    </View>
+  ) : null;
+
+  const signUpForm = !loading ? (
+    <>
+      <Text style={styles.headerText}>Get started</Text>
+      <Text style={styles.label}>Email</Text>
+      <TextInput
+        style={styles.input}
+        value={email}
+        onChangeText={(text) => setEmail(text)}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      ></TextInput>
+      <Text style={styles.label}>Password</Text>
+      <TextInput
+        style={styles.input}
+        value={password}
+        onChangeText={(text) => setPassword(text)}
+        secureTextEntry
+      ></TextInput>
+      <TouchableOpacity
+        style={styles.createAccountBtn}
+        onPress={() => handleCreateAccount()}
+      >
+        <Text style={styles.createAccountBtnText}>Create Account</Text>
+      </TouchableOpacity>
+    </>
+  ) : null;
 
   return (
     <KeyboardAvoidingView
@@ -42,28 +81,9 @@ const SignupScreen = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View>
-          <Text style={styles.headerText}>Get started</Text>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={(text) => setEmail(text)}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          ></TextInput>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={(text) => setPassword(text)}
-            secureTextEntry
-          ></TextInput>
-          <TouchableOpacity
-            style={styles.createAccountBtn}
-            onPress={() => handleCreateAccount()}
-          >
-            <Text style={styles.createAccountBtnText}>Create Account</Text>
-          </TouchableOpacity>
+          {errorMessage}
+          {loadingIndicator}
+          {signUpForm}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -107,6 +127,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#007BFF',
   },
 });
 

@@ -1,12 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '../../supabase/supabase';
+import { Session } from '@supabase/supabase-js';
 
 interface AuthState {
   user: {
     id: string | null;
     email: string | null;
+    email_confirmed_at: string | null;
   } | null;
-  session: any | null;
+  session: Session | null;
   loading: boolean;
   error: any | null;
 }
@@ -36,6 +38,28 @@ export const signUpUser = createAsyncThunk(
   }
 );
 
+export const verifyEmail = createAsyncThunk(
+  'auth/verifyEmail',
+  async (_, thunkAPI) => {
+    try {
+      const { data: session, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      if (session && session.session) {
+        const { data: refreshedUser, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+        if (refreshedUser.user?.email_confirmed_at) {
+          return refreshedUser.user;
+        } else {
+          throw new Error('Email not verified yet');
+        }
+      }
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -48,17 +72,38 @@ const authSlice = createSlice({
       })
       .addCase(signUpUser.fulfilled, (state, action) => {
         state.loading = false;
+        const { id, email, email_confirmed_at } = action.payload || {};
         state.user = action.payload
           ? {
-              id: action.payload.id || null,
-              email: action.payload.email || null,
+              id: id || null,
+              email: email || null,
+              email_confirmed_at: email_confirmed_at || null,
             }
           : null;
       })
       .addCase(signUpUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(verifyEmail.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyEmail.fulfilled, (state, action) => {
+        state.loading = false;
+        const { id, email, email_confirmed_at } = action.payload || {};
+        state.user = action.payload
+          ? {
+            id: id || null,
+            email: email || null,
+            email_confirmed_at: email_confirmed_at || null,
+            }
+          : null;
+      })
+      .addCase(verifyEmail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
   },
 });
 
