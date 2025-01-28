@@ -1,45 +1,27 @@
-import { createStaticNavigation } from '@react-navigation/native';
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import OnboardingScreen from '../screens/OnboardingScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { RootStackParamList } from './types';
+import SignInScreen from '../screens/SignInScreen';
 import DashboardScreen from '../screens/DashboardScreen';
-import SignupScreen from '../screens/SignupScreen';
-import LoginScreen from '../screens/LoginScreen';
-import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 
-const RootStack = createNativeStackNavigator({
-  initialRouteName: 'Onboarding',
-  screens: {
-    Onboarding: {
-      screen: OnboardingScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    Signup: {
-      screen: SignupScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    Login: {
-      screen: LoginScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    Dashboard: {
-      screen: DashboardScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    VerifyEmail: {
-      screen: VerifyEmailScreen,
-      options: {
-        headerShown: false
-      }
-    }
-  },
-});
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export const Navigation = createStaticNavigation(RootStack);
+export const Navigation = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="SignIn">
+        <Stack.Screen
+          name="SignIn"
+          component={SignInScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Dashboard"
+          component={DashboardScreen}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};

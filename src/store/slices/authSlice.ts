@@ -1,13 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { Platform } from 'react-native';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../../supabase/supabase';
-import { Session } from '@supabase/supabase-js';
 
 interface AuthState {
-  user: {
-    id: string | null;
-    email: string | null;
-    email_confirmed_at: string | null;
-  } | null;
+  user: User | null;
   session: Session | null;
   loading: boolean;
   error: any | null;
@@ -20,42 +18,43 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const signUpUser = createAsyncThunk(
-  'auth/signUpUser',
-  async (
-    { email, password }: { email: string; password: string },
-    thunkAPI
-  ) => {
+export const signInWithApple = createAsyncThunk(
+  'auth/signInWithApple',
+  async (_, thunkAPI) => {
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (Platform.OS !== 'ios') {
+        throw new Error('Sign in with Apple is only available on iOS devices.');
+      }
+
+      // Perform Apple sign-in to get credentials
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (!credential.identityToken) {
+        throw new Error('No identityToken returned from Apple.');
+      }
+
+      // Sign in supabase with apple identity token
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
       if (error) {
         throw new Error(error.message);
       }
-      return data.user;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message);
-    }
-  }
-);
 
-export const verifyEmail = createAsyncThunk(
-  'auth/verifyEmail',
-  async (_, thunkAPI) => {
-    try {
-      const { data: session, error } = await supabase.auth.getSession();
-      if (error) throw error;
-
-      if (session && session.session) {
-        const { data: refreshedUser, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
-        if (refreshedUser.user?.email_confirmed_at) {
-          return refreshedUser.user;
-        } else {
-          throw new Error('Email not verified yet');
-        }
+      return {
+        user: data.user,
+        session: data.session,
+      };
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+        return thunkAPI.rejectWithValue('Sign in was canceled by the user.');
       }
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message);
+      return thunkAPI.rejectWithValue(e.message);
     }
   }
 );
@@ -63,48 +62,31 @@ export const verifyEmail = createAsyncThunk(
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    signOut(state) {
+      state.user = null;
+      state.session = null;
+      state.loading = false;
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(signUpUser.pending, (state) => {
+      .addCase(signInWithApple.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(signUpUser.fulfilled, (state, action) => {
+      .addCase(signInWithApple.fulfilled, (state, action) => {
         state.loading = false;
-        const { id, email, email_confirmed_at } = action.payload || {};
-        state.user = action.payload
-          ? {
-              id: id || null,
-              email: email || null,
-              email_confirmed_at: email_confirmed_at || null,
-            }
-          : null;
+        state.user = action.payload.user;
+        state.session = action.payload.session;
       })
-      .addCase(signUpUser.rejected, (state, action) => {
+      .addCase(signInWithApple.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(verifyEmail.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(verifyEmail.fulfilled, (state, action) => {
-        state.loading = false;
-        const { id, email, email_confirmed_at } = action.payload || {};
-        state.user = action.payload
-          ? {
-            id: id || null,
-            email: email || null,
-            email_confirmed_at: email_confirmed_at || null,
-            }
-          : null;
-      })
-      .addCase(verifyEmail.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+        state.error = action.payload as string;
+      });
   },
 });
 
+export const { signOut } = authSlice.actions;
 export default authSlice.reducer;
