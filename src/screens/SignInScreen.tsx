@@ -2,11 +2,11 @@ import React, { useEffect } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { AppDispatch, RootState } from '../store/store';
-import { signInWithApple } from '../store/slices/authSlice';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
+import { AppDispatch, RootState } from '../store/store';
+import { signInWithApple } from '../store/slices/authSlice';
 
 const SignInScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

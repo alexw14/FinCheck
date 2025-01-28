@@ -3,7 +3,6 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 
-
 const DashboardScreen = () => {
   const { user, loading, error } = useSelector(
     (state: RootState) => state.auth

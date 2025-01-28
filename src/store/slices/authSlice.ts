@@ -59,6 +59,50 @@ export const signInWithApple = createAsyncThunk(
   }
 );
 
+// restore session on app load
+export const restoreSession = createAsyncThunk(
+  'auth/restoreSession',
+  async (_, thunkAPI) => {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      if (data?.session) {
+        return {
+          user: data.session.user,
+          session: data.session,
+        };
+      } else {
+        return {
+          user: null,
+          session: null,
+        };
+      }
+    } catch (e: any) {
+      return thunkAPI.rejectWithValue(e.message);
+    }
+  }
+);
+
+// handle session changes dynamically
+export const listenToAuthChanges = createAsyncThunk(
+  'auth/listenToAuthChanges',
+  async (_, thunkAPI) => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        thunkAPI.dispatch(
+          authSlice.actions.setSession({
+            session,
+            user: session.user,
+          })
+        );
+      } else {
+        thunkAPI.dispatch(authSlice.actions.signOut());
+      }
+    });
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -68,7 +112,11 @@ const authSlice = createSlice({
       state.session = null;
       state.loading = false;
       state.error = null;
-    }
+    },
+    setSession(state, action) {
+      state.session = action.payload.session;
+      state.user = action.payload.user;
+    },
   },
   extraReducers: (builder) => {
     builder
