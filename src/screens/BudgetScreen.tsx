@@ -3,14 +3,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 
-const DashboardScreen = () => {
+const BudgetScreen = () => {
   const { user, loading, error } = useSelector(
     (state: RootState) => state.auth
   );
-  
+
   return (
     <View style={styles.container}>
-      <Text>Dashboard Screen</Text>
+      <Text>Budget Screen</Text>
     </View>
   );
 };
@@ -25,4 +25,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DashboardScreen;
+export default BudgetScreen;

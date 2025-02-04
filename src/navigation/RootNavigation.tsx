@@ -7,6 +7,7 @@ import { RootStackParamList } from './types';
 import { RootState } from '../store/store';
 import SignInScreen from '../screens/SignInScreen';
 import DashboardScreen from '../screens/DashboardScreen';
+import BottomTabsNavigation from './BottomTabsNavigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -25,8 +26,8 @@ const Navigation = () => {
       <Stack.Navigator>
         {user ? (
           <Stack.Screen
-            name="Dashboard"
-            component={DashboardScreen}
+            name="MainApp"
+            component={BottomTabsNavigation}
             options={{ headerShown: false }}
           />
         ) : (

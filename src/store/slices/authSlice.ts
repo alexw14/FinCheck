@@ -65,6 +65,7 @@ export const restoreSession = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const { data, error } = await supabase.auth.getSession();
+      console.log(data);
       if (error) throw error;
 
       if (data?.session) {
