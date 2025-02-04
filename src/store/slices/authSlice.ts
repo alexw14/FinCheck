@@ -59,13 +59,24 @@ export const signInWithApple = createAsyncThunk(
   }
 );
 
+export const signOutUser = createAsyncThunk(
+  'auth/signOutUser',
+  async (_, thunkAPI) => {
+    try {
+      await supabase.auth.signOut();
+      thunkAPI.dispatch(authSlice.actions.signOut());
+    } catch (e: any) {
+      return thunkAPI.rejectWithValue(e.message);
+    }
+  }
+);
+
 // restore session on app load
 export const restoreSession = createAsyncThunk(
   'auth/restoreSession',
   async (_, thunkAPI) => {
     try {
       const { data, error } = await supabase.auth.getSession();
-      console.log(data);
       if (error) throw error;
 
       if (data?.session) {

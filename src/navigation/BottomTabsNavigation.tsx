@@ -12,6 +12,19 @@ const BottomTabsNavigation = () => {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen
+        name="Budget"
+        component={BudgetScreen}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name={focused ? 'pie-chart' : 'pie-chart-outline'}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      {/* <Tab.Screen
         name="Home"
         component={DashboardScreen}
         options={{
@@ -23,7 +36,7 @@ const BottomTabsNavigation = () => {
             />
           ),
         }}
-      />
+      /> */}
       <Tab.Screen
         name="Transactions"
         component={TransactionsScreen}
@@ -38,20 +51,7 @@ const BottomTabsNavigation = () => {
         }}
       />
       <Tab.Screen
-        name="Budget"
-        component={BudgetScreen}
-        options={{
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? 'pie-chart' : 'pie-chart-outline'}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="settings"
+        name="Settings"
         component={SettingsScreen}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
